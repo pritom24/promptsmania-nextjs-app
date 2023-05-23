@@ -5,9 +5,17 @@ import { useState, useEffect } from "react";
 import { signIn, signOut, getProviders, useSession } from "next-auth/react";
 
 const Nav = () => {
-  const isUserLoggedIn = true;
+  const { data: session } = useSession();
   const [providers, setProviders] = useState(null);
   const [toggleDropDown, setToggleDropDown] = useState(false);
+
+  useEffect(() => {
+    const setUpProviders = async () => {
+      const response = await getProviders();
+      setProviders(response);
+    };
+    setUpProviders();
+  }, []);
   return (
     <nav className="flex-between w-full mb-16 pt-3">
       <Link href="/" className="flex gap-2 flex-center">
@@ -20,13 +28,15 @@ const Nav = () => {
         />
         <p className="logo_text">promptsmania</p>
       </Link>
+
+      {/* desktop navigation */}
       <div className="sm:flex hidden">
-        {isUserLoggedIn ? (
+        {session?.user ? (
           <div className="flex gap-3 md:gap-5">
-            <Link onClick={signOut} href="create-prompt" className="black_btn">
+            <Link href="/create-prompt" className="black_btn">
               create post
             </Link>
-            <button type="button" className="outline_btn">
+            <button type="button" onClick={signOut} className="outline_btn">
               sign out
             </button>
             <Link href="/profile">
@@ -34,7 +44,7 @@ const Nav = () => {
                 className="rounded-full"
                 width={37}
                 height={37}
-                src="/assets/images/profile.png"
+                src={session?.user.image}
               />
             </Link>
           </div>
@@ -56,14 +66,14 @@ const Nav = () => {
       </div>
       {/* mobile navigation */}
       <div className="sm:hidden flex relative">
-        {isUserLoggedIn ? (
+        {session?.user ? (
           <div className="flex">
             <Image
               alt="profile"
               className="rounded-full"
               width={37}
               height={37}
-              src="/assets/images/profile.png"
+              src={session?.user.image}
               onClick={() => {
                 setToggleDropDown((prev) => !prev);
               }}
